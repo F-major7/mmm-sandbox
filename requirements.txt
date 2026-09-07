@@ -1,0 +1,11 @@
+pymc-marketing==0.19.2
+pymc==5.28.5
+pytensor==2.38.3
+arviz==0.23.4
+xarray==2026.7.0
+numpy==2.4.6
+pandas==3.0.5
+scipy==1.17.1
+plotly==7.0.0
+streamlit==1.63.0
+pytest==9.1.1
