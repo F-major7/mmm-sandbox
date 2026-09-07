@@ -1,0 +1,40 @@
+{
+  "channels": [
+    "tv",
+    "search",
+    "social",
+    "display"
+  ],
+  "l_max": 8,
+  "baseline": 200000.0,
+  "trend_total": 0.15,
+  "season_amplitude": 0.1,
+  "noise_sd": 6000.0,
+  "seed": 42,
+  "channel_params": {
+    "tv": {
+      "alpha": 0.7,
+      "K": 30000.0,
+      "S": 1.8,
+      "beta": 80000.0
+    },
+    "search": {
+      "alpha": 0.1,
+      "K": 15000.0,
+      "S": 0.9,
+      "beta": 60000.0
+    },
+    "social": {
+      "alpha": 0.4,
+      "K": 15000.0,
+      "S": 1.2,
+      "beta": 45000.0
+    },
+    "display": {
+      "alpha": 0.3,
+      "K": 10000.0,
+      "S": 1.0,
+      "beta": 20000.0
+    }
+  }
+}
