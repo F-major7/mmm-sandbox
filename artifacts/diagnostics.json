@@ -1,0 +1,18 @@
+{
+  "n_chains": 4,
+  "n_draws_per_chain": 1000,
+  "max_rhat": 1.007315,
+  "min_ess_bulk": 1208.428953,
+  "min_ess_tail": 970.410985,
+  "n_divergences": 43,
+  "sampling_time_seconds": 211.5393509864807,
+  "wall_time_seconds": 214.9,
+  "sampler": {
+    "draws": 1000,
+    "tune": 2000,
+    "chains": 4,
+    "target_accept": 0.95,
+    "seed": 42
+  },
+  "recovery_inside_94_hdi": "16/16"
+}
