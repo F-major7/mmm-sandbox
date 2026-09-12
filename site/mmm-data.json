@@ -1,7 +1,7 @@
 {
  "generated": {
-  "at": "2026-09-11T07:42:40Z",
-  "commit": "98261fd",
+  "at": "2026-09-12T22:43:43Z",
+  "commit": "76b74a2",
   "posteriorSha": "1242e002a7ba",
   "script": "scripts/export_site_data.py"
  },
