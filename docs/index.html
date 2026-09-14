@@ -40,10 +40,28 @@
   .stat-label { margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: oklch(0.60 0.010 265); }
   .stat-value { margin: 8px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 25px; letter-spacing: -0.02em; }
   .stat-sub { margin: 4px 0 0; font-size: 13px; color: oklch(0.52 0.012 265); }
-  .plain { margin-top: 28px; padding: 18px 22px; border-left: 3px solid oklch(0.72 0.13 155); background: oklch(0.97 0.012 155); font-size: 15px; line-height: 1.65; color: oklch(0.30 0.012 265); max-width: 820px; }
+  /* Two reading modes, two consistent signatures: green + "In plain terms" for Simple,
+     blue + "Technical" for Technical. The ::before label means every aside is tagged
+     the same way without repeating markup at each site. */
+  .plain, .tech { margin-top: 28px; padding: 16px 22px 18px; max-width: 820px; line-height: 1.65; }
+  .plain::before, .tech::before { display: block; margin-bottom: 7px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .plain { border-left: 3px solid oklch(0.72 0.13 155); background: oklch(0.97 0.012 155); font-size: 15px; color: oklch(0.30 0.012 265); }
+  .plain::before { content: "In plain terms"; color: oklch(0.48 0.13 155); }
+  .plain[data-label]::before { content: attr(data-label); color: oklch(0.52 0.15 250); }
   .plain strong { font-weight: 600; }
-  .tech { margin-top: 28px; padding: 18px 22px; border-left: 3px solid oklch(0.60 0.16 250); background: oklch(0.975 0.006 250); font-size: 14px; line-height: 1.65; color: oklch(0.34 0.012 265); max-width: 820px; }
+  .tech { border-left: 3px solid oklch(0.60 0.16 250); background: oklch(0.975 0.006 250); font-size: 14px; color: oklch(0.34 0.012 265); }
+  .tech::before { content: "Technical"; color: oklch(0.52 0.15 250); }
   .tech code, .mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  /* Inline technical asides that sit inside a card rather than standing alone. */
+  .tech-inline { margin: 10px 0 0; font-size: 13.5px; line-height: 1.6; color: oklch(0.44 0.012 265); border-left: 2px solid oklch(0.82 0.06 250); padding-left: 12px; }
+  .tech-inline::before { content: "Technical"; display: block; margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: oklch(0.58 0.12 250); }
+  /* Simple-mode signpost: shows what Technical adds here, and switches on click. */
+  .stub { margin-top: 18px; display: inline-flex; align-items: center; gap: 9px; background: transparent;
+    border: 0; border-left: 2px dashed oklch(0.78 0.05 250); padding: 4px 0 4px 12px; cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; color: oklch(0.52 0.012 265); text-align: left; }
+  .stub:hover { color: oklch(0.40 0.15 250); border-left-color: oklch(0.60 0.16 250); }
+  .stub span.mono { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: oklch(0.52 0.15 250); }
   .chip { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; padding: 7px 12px; border: 1px solid oklch(1 0 0 / 0.16); border-radius: 2px; color: oklch(0.84 0.010 265); }
   .note { margin: 0; padding: 16px 24px; font-size: 13.5px; line-height: 1.6; color: oklch(0.52 0.012 265); }
 </style>
@@ -128,6 +146,13 @@
         </div>
       </div>
     </div>
+    <div style="border-top: 1px solid oklch(0.94 0.005 265); background: {{ modeStripBg }};">
+      <div style="max-width: 1180px; margin: 0 auto; padding: 7px clamp(20px, 4vw, 44px); display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="width: 6px; height: 6px; border-radius: 50%; display: block; background: {{ modeStripDot }};"></span>
+        <span style="font-size: 12.5px; color: oklch(0.44 0.012 265);">{{ modeStripText }}</span>
+        <button type="button" onClick="{{ toggleMode }}" style="background: transparent; border: 0; padding: 0; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; font-size: 12.5px; font-weight: 500; color: {{ modeStripDot }}; border-bottom: 1px solid currentColor;">{{ modeStripAction }}</button>
+      </div>
+    </div>
   </nav>
 
   <main style="flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: clamp(40px, 5vw, 68px) clamp(20px, 4vw, 44px) clamp(60px, 7vw, 96px);">
@@ -139,7 +164,8 @@
         <p class="lede">Sales were built from the same carryover and saturation rules the model will try to learn, plus a trend, a seasonal cycle and random noise. Because the true answer exists on disk, every claim the model makes later can be checked against it.</p>
 
         <sc-if value="{{ isPlain }}" hint-placeholder-val="{{ true }}">
-          <div class="plain"><strong>In plain terms:</strong> think of this as a practice exam with the answer key sealed in an envelope. The model sits the exam in the next tabs. We open the envelope in tab 03.</div>
+          <div class="plain">Think of this as a practice exam with the answer key sealed in an envelope. The model sits the exam in the next tabs. We open the envelope in tab 03.</div>
+          <button type="button" class="stub" onClick="{{ goTech }}"><span class="mono">Technical</span> the equation behind the generated sales, and the file that produces it &rarr;</button>
         </sc-if>
         <sc-if value="{{ isTech }}" hint-placeholder-val="{{ false }}">
           <div class="tech">sales<sub>t</sub> = baseline + trend<sub>t</sub> + seasonality<sub>t</sub> + &Sigma;<sub>c</sub> &beta;<sub>c</sub> &middot; hill(adstock(spend<sub>c,t</sub>)) + &epsilon;<sub>t</sub>, with &epsilon; ~ N(0, {{ noiseSdLabel }}), normalised geometric adstock (l<sub>max</sub> = {{ lMax }}) and Hill saturation. Seed {{ seed }}. Generator: <code>mmm_sandbox/data.py</code>.</div>
@@ -247,7 +273,8 @@
         <p class="lede">Both are computed live in your browser from the same formulas the model uses. The sliders open on TV&rsquo;s true values.</p>
 
         <sc-if value="{{ isPlain }}" hint-placeholder-val="{{ true }}">
-          <div class="plain"><strong>In plain terms:</strong> an ad keeps working for a while after you pay for it (carryover), and the tenth dollar in a week buys less than the first (saturation). Every media mix model needs a rule for each. Drag the sliders to see what the rules look like.</div>
+          <div class="plain">An ad keeps working for a while after you pay for it (carryover), and the tenth dollar in a week buys less than the first (saturation). Every media mix model needs a rule for each. Drag the sliders to see what the rules look like.</div>
+          <button type="button" class="stub" onClick="{{ goTech }}"><span class="mono">Technical</span> both formulas, and how they were checked against PyMC-Marketing &rarr;</button>
         </sc-if>
 
         <div class="card" style="margin-top: 44px;">
@@ -256,7 +283,7 @@
               <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Adstock &mdash; carryover</h3>
               <p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.6; color: oklch(0.44 0.012 265);">An ad you paid for this week keeps working in later weeks. The bars show how one week&rsquo;s spend is spread over the following weeks.</p>
               <sc-if value="{{ isTech }}" hint-placeholder-val="{{ false }}">
-                <p style="margin: 10px 0 0; font-size: 13.5px; line-height: 1.6; color: oklch(0.44 0.012 265);">Weight at lag L is &alpha;<sup>L</sup> for L &lt; {{ lMax }}, normalised so the weights sum to one: carryover redistributes spend over time without inventing any. Same function as <code class="mono">geometric_adstock</code> in <code class="mono">mmm_sandbox/transforms.py</code>, proven equal to PyMC-Marketing&rsquo;s.</p>
+                <p class="tech-inline">Weight at lag L is &alpha;<sup>L</sup> for L &lt; {{ lMax }}, normalised so the weights sum to one: carryover redistributes spend over time without inventing any. Same function as <code class="mono">geometric_adstock</code> in <code class="mono">mmm_sandbox/transforms.py</code>, proven equal to PyMC-Marketing&rsquo;s.</p>
               </sc-if>
             </div>
             <div>
@@ -277,7 +304,7 @@
               <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Saturation &mdash; diminishing returns</h3>
               <p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.6; color: oklch(0.44 0.012 265);">The tenth dollar buys less than the first. K is the weekly spend at which a channel is half saturated. S sets the shape: below 1, returns fall from the first dollar; above 1, the curve needs momentum before it pays off.</p>
               <sc-if value="{{ isTech }}" hint-placeholder-val="{{ false }}">
-                <p style="margin: 10px 0 0; font-size: 13.5px; line-height: 1.6; color: oklch(0.44 0.012 265);">Hill function <span class="mono">x<sup>S</sup> / (K<sup>S</sup> + x<sup>S</sup>)</span>, mapped to 0&ndash;1 and scaled by the channel&rsquo;s ceiling &beta;. PyMC-Marketing calls K <span class="mono">kappa</span> and S <span class="mono">slope</span>.</p>
+                <p class="tech-inline">Hill function <span class="mono">x<sup>S</sup> / (K<sup>S</sup> + x<sup>S</sup>)</span>, mapped to 0&ndash;1 and scaled by the channel&rsquo;s ceiling &beta;. PyMC-Marketing calls K <span class="mono">kappa</span> and S <span class="mono">slope</span>.</p>
               </sc-if>
             </div>
             <div>
@@ -327,7 +354,8 @@
         </div>
 
         <sc-if value="{{ isPlain }}" hint-placeholder-val="{{ true }}">
-          <div class="plain"><strong>In plain terms:</strong> the model was asked {{ recoveryTotal }} questions with known answers and gave a range for each. All {{ recoveryTotal }} true answers landed inside the ranges. Some ranges are wide, which is the model reporting what two years of data can and cannot settle.</div>
+          <div class="plain">The model was asked {{ recoveryTotal }} questions with known answers and gave a range for each. All {{ recoveryTotal }} true answers landed inside the ranges. Some ranges are wide, which is the model reporting what two years of data can and cannot settle.</div>
+          <button type="button" class="stub" onClick="{{ goTech }}"><span class="mono">Technical</span> sampler diagnostics, what was verified before trusting the fit, and numeric interval bounds &rarr;</button>
         </sc-if>
 
         <div class="card" style="margin-top: 40px;">
@@ -379,6 +407,9 @@
               <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 2px; display: block; background: oklch(0.22 0.012 265);"></span>Actual</span>
               <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 2px; display: block; background: oklch(0.60 0.16 250);"></span>Model prediction</span>
               <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 10px; display: block; background: oklch(0.60 0.16 250 / 0.18);"></span>{{ hdiProb }}% predictive interval</span>
+              <sc-if value="{{ isTech }}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 2px; display: block; background: oklch(0.55 0.10 30);"></span>residual, actual &minus; predicted</span>
+              </sc-if>
             </div>
           </div>
           <div style="padding: 8px 24px 20px; min-height: 280px;">{{ fitSvg }}</div>
@@ -423,7 +454,8 @@
         <p class="lede">ROI here means sales generated per dollar spent over the two years. A single ROI figure hides the thing a media buyer most needs to know: how much of it to believe.</p>
 
         <sc-if value="{{ isPlain }}" hint-placeholder-val="{{ true }}">
-          <div class="plain"><strong>How to read the table:</strong> &ldquo;Cautious&rdquo; is a value the true ROI is 90% likely to beat, &ldquo;Typical&rdquo; is the middle of the road, &ldquo;Optimistic&rdquo; is a value it is only 10% likely to beat. A narrow range means the data pinned the channel down; a wide one means it did not. The last column is the true ROI from the generator, which the model never saw.</div>
+          <div class="plain"><strong>How to read the table.</strong> &ldquo;Cautious&rdquo; is a value the true ROI is 90% likely to beat, &ldquo;Typical&rdquo; is the middle of the road, &ldquo;Optimistic&rdquo; is a value it is only 10% likely to beat. A narrow range means the data pinned the channel down; a wide one means it did not. The last column is the true ROI from the generator, which the model never saw.</div>
+          <button type="button" class="stub" onClick="{{ goTech }}"><span class="mono">Technical</span> percentile labels, and explicit P10 / P90 bounds drawn on every response curve &rarr;</button>
         </sc-if>
 
         <div class="card" style="margin-top: 44px;">
@@ -486,7 +518,7 @@
         <h2 class="h2">Same budget. Same model. Two different appetites for risk.</h2>
         <p class="lede">The optimizer takes the model&rsquo;s own output and re-splits {{ budgetLabel }} of weekly spend across the {{ nChannels }} channels, keeping each channel within the range of spend the data has actually seen. Switch the objective and watch where the money moves.</p>
 
-        <div class="plain" style="border-left-color: oklch(0.60 0.16 250); background: oklch(0.975 0.006 250);"><strong>The recommendation:</strong> {{ recommendation }}</div>
+        <div class="plain" style="border-left-color: oklch(0.60 0.16 250); background: oklch(0.975 0.006 250);" data-label="The recommendation">{{ recommendation }}</div>
 
         <div style="margin-top: 40px; border: 1px solid oklch(0.22 0.012 265); background: oklch(0.17 0.014 265); color: oklch(0.96 0.005 265); overflow: hidden;">
           <div style="padding: 26px clamp(22px, 3vw, 32px); border-bottom: 1px solid oklch(1 0 0 / 0.09); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;">
@@ -558,7 +590,10 @@
         </div>
 
         <sc-if value="{{ isTech }}" hint-placeholder-val="{{ false }}">
-          <div class="tech">Objective: steady-state media sales &Sigma;<sub>c</sub> &beta;<sub>c</sub> &middot; hill(x<sub>c</sub>) evaluated on every posterior draw, scored by the posterior mean or by P10 of the <em>total</em> within each draw (never a sum of per-channel quantiles). Constraint &Sigma; x<sub>c</sub> = budget, 0 &le; x<sub>c</sub> &le; max observed weekly spend. SLSQP from {{ optStarts }} starting allocations, Nelder-Mead polish for the non-smooth quantile objective. Lift is computed within draws against the current allocation, so its range respects the shared uncertainty. Code: <code>mmm_sandbox/optimizer.py</code>.</div>
+          <div class="tech" style="margin-bottom: 8px;">Objective: steady-state media sales &Sigma;<sub>c</sub> &beta;<sub>c</sub> &middot; hill(x<sub>c</sub>) evaluated on every posterior draw, scored by the posterior mean or by P10 of the <em>total</em> within each draw (never a sum of per-channel quantiles). Constraint &Sigma; x<sub>c</sub> = budget, 0 &le; x<sub>c</sub> &le; max observed weekly spend. SLSQP from {{ optStarts }} starting allocations, Nelder-Mead polish for the non-smooth quantile objective. Lift is computed within draws against the current allocation, so its range respects the shared uncertainty. Code: <code>mmm_sandbox/optimizer.py</code>.</div>
+        </sc-if>
+        <sc-if value="{{ isPlain }}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="stub" onClick="{{ goTech }}"><span class="mono">Technical</span> the objective function, its constraints, and how the two answers are searched for &rarr;</button>
         </sc-if>
       </section>
     </sc-if>
@@ -616,17 +651,28 @@ const INK = 'oklch(0.22 0.012 265)';
 const ACC = 'oklch(0.60 0.16 250)';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/* Tab names follow the reading mode. Numbers stay fixed so a tab never moves position. */
 const TABS = [
-  { key: 'data', label: 'Data', num: '01' },
-  { key: 'transforms', label: 'Transforms', num: '02' },
-  { key: 'fit', label: 'Model fit', num: '03' },
-  { key: 'roi', label: 'ROI', num: '04' },
-  { key: 'optimizer', label: 'Optimizer', num: '05' }
+  { key: 'data', plain: 'Data', tech: 'Data', num: '01' },
+  { key: 'transforms', plain: 'How ads work', tech: 'Transforms', num: '02' },
+  { key: 'fit', plain: 'Accuracy', tech: 'Model fit', num: '03' },
+  { key: 'roi', plain: 'Returns', tech: 'ROI', num: '04' },
+  { key: 'optimizer', plain: 'Budget', tech: 'Optimizer', num: '05' }
 ];
 const MODES = [
   { key: 'plain', label: 'Simple' },
   { key: 'tech', label: 'Technical' }
 ];
+const MODE_KEY = 'mmm-reading-mode';
+/* The chosen mode is remembered so a reader who switches to Technical is not
+   returned to Simple on the next visit. Storage can throw in private windows. */
+function readMode(fallback) {
+  try { const v = window.localStorage.getItem(MODE_KEY); return v === 'tech' || v === 'plain' ? v : fallback; }
+  catch (e) { return fallback; }
+}
+function writeMode(v) {
+  try { window.localStorage.setItem(MODE_KEY, v); } catch (e) { /* storage unavailable; mode is still live */ }
+}
 
 const svgBox = (w, h, kids) => E('svg', {
   viewBox: '0 0 ' + w + ' ' + h,
@@ -648,7 +694,7 @@ class Component extends DCLogic {
     const tv = M && M.trueParams && M.trueParams.tv;
     this.state = {
       tab: i < 0 ? 0 : i,
-      mode: (props && props.defaultMode) === 'tech' ? 'tech' : 'plain',
+      mode: readMode((props && props.defaultMode) === 'tech' ? 'tech' : 'plain'),
       alpha: tv ? tv.alpha : 0.7, K: tv ? tv.K : 30000, S: tv ? tv.S : 1.8,
       obj: 'ev',
       tech: props && props.technicalDetail !== false,
@@ -676,6 +722,8 @@ class Component extends DCLogic {
   }
 
   goTab(i) { this.setState({ tab: i }, () => this.scrollToTabs(false)); }
+
+  setMode(mode) { writeMode(mode); this.setState({ mode: mode }); }
 
   /* ---------- charts ---------- */
 
@@ -797,7 +845,11 @@ class Component extends DCLogic {
   fitSvg() {
     const M = this.M; if (!M) return null;
     const a = M.series.sales, p = M.series.predicted, up = M.series.predHi, dn = M.series.predLo, n = a.length;
-    const W = 1000, H = 290, L = 62, R = 14, T = 16, B = 34;
+    /* Technical mode adds a residual strip beneath the fit: the same information the
+       eye cannot extract from two nearly-overlapping lines. */
+    const resid = this.state.mode === 'tech';
+    const RH = resid ? 78 : 0;
+    const W = 1000, H = 290 + RH, L = 62, R = 14, T = 16, B = 34 + RH;
     const b = niceBounds(Math.min(M.salesStats.min, Math.min.apply(null, dn)), Math.max(M.salesStats.max, Math.max.apply(null, up)), 40000), lo = b[0], hi = b[1];
     const X = (i) => L + (i * (W - L - R)) / (n - 1);
     const Y = (v) => T + ((hi - v) / (hi - lo)) * (H - T - B);
@@ -811,19 +863,44 @@ class Component extends DCLogic {
     kids.push(E('path', { key: 'band', d: upPath + ' ' + dnPath + ' Z', fill: 'oklch(0.60 0.16 250 / 0.18)' }));
     kids.push(E('path', { key: 'pred', d: p.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' '), fill: 'none', stroke: ACC, strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }));
     kids.push(E('path', { key: 'act', d: a.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' '), fill: 'none', stroke: INK, strokeWidth: 1.2, strokeOpacity: 0.85, vectorEffect: 'non-scaling-stroke' }));
+    if (resid) {
+      const rTop = H - B + 16, rH = RH - 30, rMid = rTop + rH / 2;
+      const rs = a.map((v, i) => v - p[i]);
+      const rMax = Math.max.apply(null, rs.map(Math.abs)) * 1.12 || 1;
+      const RY = (v) => rMid - (v / rMax) * (rH / 2);
+      const RED = 'oklch(0.55 0.10 30)';
+      kids.push(E('line', Object.assign({ key: 'rz', x1: L, x2: W - R, y1: rMid, y2: rMid }, GRID)));
+      /* ±1 noise SD from the generator: residuals should mostly sit inside these. */
+      [M.fit.trueNoise, -M.fit.trueNoise].forEach((s, i) => {
+        kids.push(E('line', { key: 'rs' + i, x1: L, x2: W - R, y1: RY(s), y2: RY(s), stroke: 'oklch(0.86 0.02 30)', strokeWidth: 1, strokeDasharray: '4 4' }));
+      });
+      kids.push(E('text', { key: 'rsl', x: W - R + 4, y: RY(M.fit.trueNoise) + 3, style: Object.assign({}, AXTX, { fontSize: 9.5, fill: 'oklch(0.62 0.05 30)' }) }, '+1 SD'));
+      rs.forEach((v, i) => {
+        kids.push(E('line', { key: 'r' + i, x1: X(i), x2: X(i), y1: rMid, y2: RY(v), stroke: RED, strokeWidth: 1.4, strokeOpacity: 0.55, vectorEffect: 'non-scaling-stroke' }));
+      });
+      kids.push(E('text', { key: 'rlab', x: L - 10, y: rMid + 3, textAnchor: 'end', style: Object.assign({}, AXTX, { fontSize: 10 }) }, 'residual'));
+    }
     kids.push.apply(kids, this.xTicks(M.series.dates, X, H, n));
     return svgBox(W, H, kids);
   }
 
   intervalBar(lo, hi, mean, trueV, fmt) {
-    const W = 260, H = 22, pad = 6;
+    /* In Technical mode the interval endpoints are printed under the bar, so the
+       exact bounds can be read off rather than estimated from the drawing. */
+    const labelled = this.state.mode === 'tech';
+    const W = 260, H = labelled ? 34 : 22, pad = 6, cy = 11;
     const span = hi - lo || 1;
     const X = (v) => pad + ((v - lo) / span) * (W - pad * 2);
     const kids = [
-      E('line', { key: 'l', x1: pad, x2: W - pad, y1: H / 2, y2: H / 2, stroke: 'oklch(0.88 0.008 265)', strokeWidth: 6 }),
-      E('circle', { key: 'm', cx: X(mean), cy: H / 2, r: 4, fill: 'oklch(0.60 0.16 250)' })
+      E('line', { key: 'l', x1: pad, x2: W - pad, y1: cy, y2: cy, stroke: 'oklch(0.88 0.008 265)', strokeWidth: 6 }),
+      E('circle', { key: 'm', cx: X(mean), cy: cy, r: 4, fill: 'oklch(0.60 0.16 250)' })
     ];
-    if (this.showTruth) kids.push(E('line', { key: 't', x1: X(trueV), x2: X(trueV), y1: 3, y2: H - 3, stroke: INK, strokeWidth: 2 }));
+    if (this.showTruth) kids.push(E('line', { key: 't', x1: X(trueV), x2: X(trueV), y1: cy - 8, y2: cy + 8, stroke: INK, strokeWidth: 2 }));
+    if (labelled) {
+      const tick = Object.assign({}, AXTX, { fontSize: 9.5 });
+      kids.push(E('text', { key: 'lo', x: pad, y: H - 2, textAnchor: 'start', style: tick }, fmt(lo)));
+      kids.push(E('text', { key: 'hi', x: W - pad, y: H - 2, textAnchor: 'end', style: tick }, fmt(hi)));
+    }
     return E('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', display: 'block', overflow: 'visible' }, role: 'img', 'aria-label': 'interval ' + fmt(lo) + ' to ' + fmt(hi) }, kids);
   }
 
@@ -855,6 +932,13 @@ class Component extends DCLogic {
     });
     const lower = rc.x.slice().reverse().map((x, i) => 'L' + X(x).toFixed(1) + ' ' + Y(rc.p10[rc.x.length - 1 - i]).toFixed(1)).join(' ');
     kids.push(E('path', { key: 'band', d: pth(rc.x, rc.p90) + ' ' + lower + ' Z', fill: c.color, fillOpacity: 0.14 }));
+    /* Technical mode draws the band's edges explicitly, so P10 and P90 are readable
+       as curves in their own right rather than as the boundary of a wash. */
+    if (this.state.mode === 'tech') {
+      ['p10', 'p90'].forEach((q) => {
+        kids.push(E('path', { key: q, d: pth(rc.x, rc[q]), fill: 'none', stroke: c.color, strokeWidth: 1, strokeOpacity: 0.55, strokeDasharray: '3 2', vectorEffect: 'non-scaling-stroke' }));
+      });
+    }
     kids.push(E('path', { key: 'mid', d: pth(rc.x, rc.p50), fill: 'none', stroke: c.color, strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }));
     /* current spend marker, interpolated on the P50 curve */
     let yi = 0; for (let i = 1; i < rc.x.length; i++) { if (rc.x[i] >= c.current) { const f = (c.current - rc.x[i - 1]) / (rc.x[i] - rc.x[i - 1]); yi = rc.p50[i - 1] + f * (rc.p50[i] - rc.p50[i - 1]); break; } }
@@ -876,13 +960,13 @@ class Component extends DCLogic {
     const st = this.state;
     const tabKey = TABS[st.tab].key;
     const tabs = TABS.map((t, i) => ({
-      num: t.num, label: t.label, go: () => this.goTab(i),
+      num: t.num, label: st.mode === 'tech' ? t.tech : t.plain, go: () => this.goTab(i),
       style: 'display: flex; align-items: baseline; gap: 8px; white-space: nowrap; background: transparent; border: 0; border-bottom: 2px solid ' +
         (i === st.tab ? INK : 'transparent') + '; padding: 17px 10px 15px; cursor: pointer; font-family: "IBM Plex Sans", sans-serif; font-size: 14.5px; font-weight: 500; color: ' +
         (i === st.tab ? INK : 'oklch(0.52 0.012 265)') + '; transition: color 0.2s ease, border-color 0.2s ease;'
     }));
     const modes = MODES.map((m) => ({
-      label: m.label, go: () => this.setState({ mode: m.key }),
+      label: m.label, go: () => this.setMode(m.key),
       style: 'background: ' + (st.mode === m.key ? '#fff' : 'transparent') + '; color: ' + (st.mode === m.key ? INK : 'oklch(0.52 0.012 265)') +
         '; border: 0; border-radius: 2px; padding: 6px 12px; cursor: pointer; font-family: "IBM Plex Sans", sans-serif; font-size: 12.5px; font-weight: 500; white-space: nowrap; box-shadow: ' +
         (st.mode === m.key ? '0 1px 2px oklch(0 0 0 / 0.08)' : 'none') + '; transition: background 0.2s ease, color 0.2s ease;'
@@ -906,7 +990,17 @@ class Component extends DCLogic {
       setS: (e) => this.setState({ S: parseFloat(e.target.value) }),
       h10: isTech ? 'P10' : 'Cautious', h50: isTech ? 'P50' : 'Typical', h90: isTech ? 'P90' : 'Optimistic',
       bandLabel: isTech ? 'P10–P90' : 'cautious-to-optimistic',
-      repoUrl: 'https://github.com/F-major7/mmm-sandbox'
+      repoUrl: 'https://github.com/F-major7/mmm-sandbox',
+      /* A standing explanation of what each mode is for, so a first-time reader
+         knows what switching would give them rather than having to try it. */
+      modeStripText: isTech
+        ? 'Technical: written for someone auditing the model. Formulas, diagnostics, interval bounds and file references included.'
+        : 'Simple: written for someone deciding a budget. No formulas, no jargon.',
+      modeStripAction: isTech ? 'Switch to Simple' : 'Switch to Technical',
+      modeStripBg: isTech ? 'oklch(0.975 0.008 250)' : 'oklch(0.975 0.014 155)',
+      modeStripDot: isTech ? 'oklch(0.52 0.15 250)' : 'oklch(0.48 0.13 155)',
+      toggleMode: () => this.setMode(isTech ? 'plain' : 'tech'),
+      goTech: () => { this.setMode('tech'); }
     };
     if (!M) return base;
 
@@ -1097,7 +1191,9 @@ class Component extends DCLogic {
     base.liftLabel = SIGNED(A.lift);
     base.liftNote = 'Weekly sales against the current plan, typical case. Across the full range of what the model considers possible, the change runs from ' + SIGNED(A.lo) + ' to ' + SIGNED(A.hi) + '.' +
       (st.obj === 'risk' ? ' A lower typical gain than the other objective, bought in exchange for a better worst case.' : '');
-    base.precisionLabel = A.precise ? 'Precision: point estimate' : 'Precision: approximate';
+    base.precisionLabel = isTech
+      ? (A.precise ? 'Precision: point estimate' : 'Precision: approximate')
+      : (A.precise ? 'How firm is this split: exact' : 'How firm is this split: roughly');
     base.precisionColor = A.precise ? 'oklch(0.72 0.13 155)' : 'oklch(0.80 0.14 85)';
     base.precisionNote = A.precise
       ? 'This allocation maximises expected weekly sales across the posterior. All ' + A.starts + ' optimizer starting points reached the same answer, so the numbers are stated exactly.'
